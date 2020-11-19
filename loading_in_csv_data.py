@@ -30,8 +30,13 @@ hedge_funds.rename({'Unnamed: 0': 'Date', 'composite': 'hedge funds'}, axis=1, i
 hedge_funds['Date'] = pd.to_datetime(hedge_funds['Date'], dayfirst=False)
 hedge_funds.set_index('Date', inplace=True)
 
+# adjusting the publicly traded DataFrame
+spy_tlt_gld = pd.read_csv('spy_tlt_gld.csv')
+spy_tlt_gld['Date'] = pd.to_datetime(spy_tlt_gld['Date'], dayfirst=False)
+spy_tlt_gld.set_index('Date', inplace=True)
+spy_tlt_gld = spy_tlt_gld.pct_change()
 
-fund_list = [private_credit, reits, hedge_funds]
+fund_list = [private_credit, reits, hedge_funds, spy_tlt_gld]
 
 starting = [fund.index[0] for fund in fund_list]
 ending = [fund.index[-1] for fund in fund_list]
@@ -46,19 +51,29 @@ alternatives = pd.DataFrame(index=date_range)
 
 for fund in fund_list:
 
-    alternatives[fund.columns[0]] = fund
+    x = 0
+
+    for column in fund.columns:
+
+        alternatives[fund.columns[x]] = fund[fund.columns[x]]
+
+        x += 1
+
 
 alternatives.dropna(how='any', axis=0, inplace=True)
+alternatives.drop({'GLD', 'SPY', 'hedge funds'}, axis=1, inplace=True)
 
 returns = np.cumprod(1 + alternatives, axis=0)
-
-returns
 
 returns['mean'] = returns.mean(axis=1)
 
 returns.plot()
 plt.show()
 
+
+dd = (returns['mean'] / returns['mean'].cummax()) - 1
+dd.plot()
+plt.show()
 
 
 
