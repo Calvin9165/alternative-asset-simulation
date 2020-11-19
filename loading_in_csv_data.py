@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+from cleaning_data_functions import *
+
 main_directory = r'C:\Users\19059\Simple Python Projects'
 pc_dir = r'C:\Users\19059\Simple Python Projects\private-credit'
 re_dir = r'C:\Users\19059\Simple Python Projects\private-reit-simulation'
@@ -27,3 +29,36 @@ reits.set_index('Date', inplace=True)
 hedge_funds.rename({'Unnamed: 0': 'Date', 'composite': 'hedge funds'}, axis=1, inplace=True)
 hedge_funds['Date'] = pd.to_datetime(hedge_funds['Date'], dayfirst=False)
 hedge_funds.set_index('Date', inplace=True)
+
+
+fund_list = [private_credit, reits, hedge_funds]
+
+starting = [fund.index[0] for fund in fund_list]
+ending = [fund.index[-1] for fund in fund_list]
+
+start_date = start_date_finder(dates=starting, how='newest')
+end_date = end_date_finder(dates=ending, how='oldest')
+
+date_range = pd.date_range(start_date, end_date, freq='D')
+
+alternatives = pd.DataFrame(index=date_range)
+
+
+for fund in fund_list:
+
+    alternatives[fund.columns[0]] = fund
+
+alternatives.dropna(how='any', axis=0, inplace=True)
+
+returns = np.cumprod(1 + alternatives, axis=0)
+
+returns
+
+returns['mean'] = returns.mean(axis=1)
+
+returns.plot()
+plt.show()
+
+
+
+
