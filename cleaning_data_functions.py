@@ -90,3 +90,10 @@ def clean_str_to_float(df_to_clean, chars_to_remove):
 
     # convert all columns to float
     return df_to_clean.apply(pd.to_numeric)
+
+
+def rolling_drawdowns(df):
+
+    drawdown = (df / df.cummax()) - 1
+
+    return drawdown

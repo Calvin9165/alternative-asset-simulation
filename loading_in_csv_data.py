@@ -59,7 +59,7 @@ for fund in fund_list:
 
 
 alternatives.dropna(how='any', axis=0, inplace=True)
-alternatives.drop({'GLD', 'SPY', 'hedge funds'}, axis=1, inplace=True)
+# alternatives.drop({'GLD', 'SPY', 'hedge funds'}, axis=1, inplace=True)
 
 # creating the allocation DataFrame which provides a desired allocation for each investment over the period of
 # the backtest
@@ -67,6 +67,7 @@ allocation = pd.DataFrame(index=alternatives.index, columns=alternatives.columns
 allocation['private_credit'] = 0.4
 allocation['reits'] = 0.4
 allocation['TLT'] = 0.2
+
 
 
 
