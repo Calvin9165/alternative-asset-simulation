@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 
 from cleaning_data_functions import *
 
-main_directory = r'C:\Users\19059\Simple Python Projects'
+
 pc_dir = r'C:\Users\19059\Simple Python Projects\private-credit'
 re_dir = r'C:\Users\19059\Simple Python Projects\private-reit-simulation'
 hf_dir = r'C:\Users\19059\Simple Python Projects\hedge-fund-simulation'
-
-r'C:\Users\19059\Simple Python Projects\private-credit'
 
 private_credit = pd.read_csv(pc_dir + r'\composite private credit.csv')
 reits = pd.read_csv(re_dir + r'\composite reit returns.csv')
@@ -63,17 +61,84 @@ for fund in fund_list:
 alternatives.dropna(how='any', axis=0, inplace=True)
 alternatives.drop({'GLD', 'SPY', 'hedge funds'}, axis=1, inplace=True)
 
-returns = np.cumprod(1 + alternatives, axis=0)
+# creating the allocation DataFrame which provides a desired allocation for each investment over the period of
+# the backtest
+allocation = pd.DataFrame(index=alternatives.index, columns=alternatives.columns)
+allocation['private_credit'] = 0.4
+allocation['reits'] = 0.4
+allocation['TLT'] = 0.2
 
-returns['mean'] = returns.mean(axis=1)
 
-returns.plot()
+
+invested = 1000
+rebal_freq = 63
+
+dates = alternatives.index
+securities = alternatives.columns
+
+# the dollar value of the portfolio
+portfolio_value = pd.DataFrame(data=None, columns=['Portfolio'], index=dates)
+portfolio_value.iloc[0]['Portfolio'] = invested
+
+# the $ value allocated in each position
+positions = pd.DataFrame(data=None, columns=securities, index=dates)
+
+# pnl_stocks will hold the net PnL Data for each stock over the entire backtest
+pnl_positions = pd.DataFrame(data=0, columns=securities, index=dates)
+
+for t in range(0, len(alternatives), rebal_freq):
+
+    if t == 0:
+        rb_day = dates[t]
+    else:
+        rb_day = dates[t + 1]
+
+    # the day that we rebalance the portfolio, use this value in portfolio_value to calculate allocation
+    rb_value = dates[t]
+
+    try:
+        rb_end = dates[t + rebal_freq]
+    except IndexError:
+        rb_end = dates[-1]
+
+    for position in positions:
+        positions.loc[rb_day: rb_end, position] = portfolio_value['Portfolio'][rb_value] * (
+                allocation[position][rb_day] * np.cumprod(1 + alternatives.loc[rb_day: rb_end, position]))
+
+        pnl_positions.loc[rb_day:rb_end, position] = (positions.loc[rb_day:rb_end, position] -
+                                                      portfolio_value['Portfolio'][rb_value] * allocation[position][
+                                                          rb_day]
+                                                      ) + pnl_positions.loc[rb_value, position]
+
+    portfolio_value.loc[rb_day: rb_end, 'Portfolio'] = np.nansum(positions.loc[rb_day: rb_end], axis=1)
+
+
+portfolio_value.plot()
+plt.show()
+
+pnl_positions.plot()
+plt.show()
+
+# this shows the $ value in each investment - we can draw the % allocation to each investment from this
+positions.plot()
 plt.show()
 
 
-dd = (returns['mean'] / returns['mean'].cummax()) - 1
-dd.plot()
-plt.show()
+
+
+# returns = np.cumprod(1 + alternatives, axis=0)
+#
+# returns.to_csv('test.csv')
+
+# returns['mean'] = returns.mean(axis=1)
+#
+# returns.plot()
+# plt.show()
+#
+#
+# dd = (returns['mean'] / returns['mean'].cummax()) - 1
+# dd.plot()
+# plt.show()
 
 
 
