@@ -35,6 +35,8 @@ for i in alts:
 
 ax1.plot(np.cumprod(1 + alternatives['SPY']), label='SPY', color='black', lw=0.5, alpha=0.75)
 ax2.plot(rolling_drawdowns(np.cumprod(1 + alternatives['SPY'])), label='SPY', color='black', lw=0.5, alpha=0.75)
+
+# https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html
 sns.heatmap(data=matrix, annot=True, cmap='coolwarm', linecolor='black', linewidths=2, ax=ax3)
 
 
@@ -42,3 +44,22 @@ ax1.legend()
 ax2.legend()
 plt.tight_layout()
 plt.show()
+
+
+max_dd = {}
+cagr = {}
+
+
+all_strats = ['private_credit', 'hedge funds', 'reits', 'SPY']
+
+
+for strat in all_strats:
+
+    max_dd.update({strat: min((np.cumprod(alternatives[strat] / alternatives[strat].cummax()) - 1)})
+
+    # cagr.update({strat: cagr(strategy_series=alternatives[strat])})
+
+
+print(max_dd)
+print(cagr)
+

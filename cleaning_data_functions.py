@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import pandas_market_calendars as mcal
+from datetime import timedelta
 
 
 def clean_om_funds_from_dataphile(df, remove_cols):
@@ -97,3 +98,50 @@ def rolling_drawdowns(df):
     drawdown = (df / df.cummax()) - 1
 
     return drawdown
+
+def cagr(strategy_series, data_freq='calendar'):
+    """
+    :param strategy_series: float, price or dollar value of strategy/asset/stock we want to measure CAGR for
+    :param data_freq: string, the frequency with which the data is produced. This is only taken into account
+        if the index of strategy_series are integers
+    :return: float, the CAGR over the entire time period for the strategy/asset/stock in question
+    """
+
+    # TODO Question to think about: Should we even let the cagr function work if the index provided is not a datetime
+    #   index?
+
+    # the number of days used on our denominator 365 for all cases, except data without datetime index
+    num_days = timedelta(days=365)
+
+    # beginning and ending value for the strategy/asset/stock in question
+    start_val = strategy_series.iloc[0]
+    end_val = strategy_series.iloc[-1]
+
+    # if index of series is a datetime index
+
+    print(strategy_series.index.dtype)
+    if strategy_series.index.dtype is 'datetime[ns]':
+
+        # period is equal to number of years the strategy has been invested for as a float
+        period = (strategy_series.index[-1] - strategy_series.index[0]) / num_days
+
+        return ((end_val / start_val) ** (1 / period)) - 1
+
+    # if index is not a datetime index
+    else:
+
+        # if the trading data includes all calendar days
+        if data_freq == 'calendar':
+
+            period = (strategy_series.index[-1] - strategy_series.index[0]) / num_days
+
+            return ((end_val / start_val) ** (1 / period)) - 1
+
+        # if the trading data only includes trading days
+        elif data_freq == 'trade':
+
+            num_days = 252
+
+            period = (strategy_series.index[-1] - strategy_series.index[0]) / 252
+
+            return ((end_val / start_val) ** (1 / period)) - 1
