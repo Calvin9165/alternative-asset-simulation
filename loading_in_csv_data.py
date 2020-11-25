@@ -113,32 +113,17 @@ for t in range(0, len(alternatives), rebal_freq):
     portfolio_value.loc[rb_day: rb_end, 'Portfolio'] = np.nansum(positions.loc[rb_day: rb_end], axis=1)
 
 
-portfolio_value.plot()
-plt.show()
+if __name__ == '__main__':
 
-pnl_positions.plot()
-plt.show()
+    portfolio_value.plot()
+    plt.show()
 
-# this shows the $ value in each investment - we can draw the % allocation to each investment from this
-positions.plot()
-plt.show()
+    pnl_positions.plot()
+    plt.show()
 
-
-
-
-# returns = np.cumprod(1 + alternatives, axis=0)
-#
-# returns.to_csv('test.csv')
-
-# returns['mean'] = returns.mean(axis=1)
-#
-# returns.plot()
-# plt.show()
-#
-#
-# dd = (returns['mean'] / returns['mean'].cummax()) - 1
-# dd.plot()
-# plt.show()
+    pct_alloc = positions.div(portfolio_value['Portfolio'], axis='index')
+    pct_alloc.plot()
+    plt.show()
 
 
 
