@@ -1,5 +1,6 @@
 from cleaning_data_functions import *
 from loading_in_csv_data import alternatives
+from math import sqrt
 
 import pandas as pd
 from pandas.plotting import table
@@ -40,7 +41,7 @@ sns.heatmap(data=matrix, annot=True, cmap='coolwarm', linecolor='black', linewid
 ax1.legend()
 ax2.legend()
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 
 print(min(rolling_drawdowns(alt_cum['SPY'])))
@@ -52,8 +53,28 @@ for i in alternatives.columns:
 
     max_dd.update({i: min(rolling_drawdowns(alt_cum[i]))})
     cagr.update({i: cagr_calculator(strategy_series=alt_cum[i])})
-    
+
 
 print(max_dd)
 print(cagr)
+
+
+annualized_vol = alternatives.std()*sqrt(252)
+
+vol = {}
+
+for i in annualized_vol.index:
+
+    vol.update({i: annualized_vol[i]})
+
+
+
+print(max_dd.keys())
+
+for key, value in max_dd.items():
+    print(key, value)
+
+df = pd.DataFrame.from_dict(max_dd, orient='index')
+
+print(df)
 
