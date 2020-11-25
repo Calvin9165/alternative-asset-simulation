@@ -10,14 +10,10 @@ import seaborn as sns
 alts = ['private_credit', 'reits', 'hedge funds']
 non_alts = ['GLD', 'SPY', 'TLT']
 
-# print(alternatives.head())
-# print(alternatives['private_credit', 'reits', 'hedge funds', 'SPY'])
+alternatives.drop({'TLT', 'GLD'}, axis=1, inplace=True)
+matrix = round(alternatives.corr(), 2)
 
-# alternatives.drop({'TLT', 'GLD'}, axis=1, inplace=True)
-
-# alt_cum = np.cumprod(1 + alternatives, axis=0)
-
-matrix = round(alternatives.drop({'TLT', 'GLD'}, axis=1).corr(), 2)
+alt_cum = np.cumprod(1 + alternatives, axis=0)
 
 fig = plt.figure(figsize=(9, 6))
 gs = fig.add_gridspec(nrows=4, ncols=4)
@@ -28,13 +24,14 @@ ax3 = fig.add_subplot(gs[2:, :2])
 
 for i in alts:
     # plot performance on first graph
-    ax1.plot(np.cumprod(1 + alternatives[i]), label=i)
+
+    ax1.plot(alt_cum[i], label=i)
 
     # plot drawdowns on second graph
-    ax2.plot(rolling_drawdowns(np.cumprod(1 + alternatives[i])), label=i)
+    ax2.plot(rolling_drawdowns(alt_cum[i]), label=i)
 
-ax1.plot(np.cumprod(1 + alternatives['SPY']), label='SPY', color='black', lw=0.5, alpha=0.75)
-ax2.plot(rolling_drawdowns(np.cumprod(1 + alternatives['SPY'])), label='SPY', color='black', lw=0.5, alpha=0.75)
+ax1.plot(alt_cum['SPY'], label='SPY', color='black', lw=0.5, alpha=0.75)
+ax2.plot(rolling_drawdowns(alt_cum['SPY']), label='SPY', color='black', lw=0.5, alpha=0.75)
 
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html
 sns.heatmap(data=matrix, annot=True, cmap='coolwarm', linecolor='black', linewidths=2, ax=ax3)
@@ -46,19 +43,16 @@ plt.tight_layout()
 plt.show()
 
 
+print(min(rolling_drawdowns(alt_cum['SPY'])))
+
 max_dd = {}
 cagr = {}
 
+for i in alternatives.columns:
 
-all_strats = ['private_credit', 'hedge funds', 'reits', 'SPY']
-
-
-for strat in all_strats:
-
-    max_dd.update({strat: min((np.cumprod(alternatives[strat] / alternatives[strat].cummax()) - 1)})
-
-    # cagr.update({strat: cagr(strategy_series=alternatives[strat])})
-
+    max_dd.update({i: min(rolling_drawdowns(alt_cum[i]))})
+    cagr.update({i: cagr_calculator(strategy_series=alt_cum[i])})
+    
 
 print(max_dd)
 print(cagr)

@@ -99,7 +99,7 @@ def rolling_drawdowns(df):
 
     return drawdown
 
-def cagr(strategy_series, data_freq='calendar'):
+def cagr_calculator(strategy_series, data_freq='calendar'):
     """
     :param strategy_series: float, price or dollar value of strategy/asset/stock we want to measure CAGR for
     :param data_freq: string, the frequency with which the data is produced. This is only taken into account
